@@ -12,7 +12,7 @@ class Jacobian_calc():
         rospy.init_node('jacobian_calc',anonymous=True)
         self.jacob_pub = rospy.Publisher('jacobian_topic',Jacobian,queue_size=10)
         # Get the robot description from the parameter server
-        robot_description_param = "/my_gen3/robot_description"  # Replace with your namespace
+        robot_description_param = "/my_gen3/robot_description"  # make sure the namespace is added properly
         robot_description = rospy.get_param(robot_description_param)
 
         # Parse the URDF
@@ -187,33 +187,34 @@ class Jacobian_calc():
             msg.data = flattened_jacob
             self.jacob_pub.publish(msg)
 
-            # Specify the links
-            source_frame = "base_link"
-            target_frame = "end_effector_link"
-
-            try:
-                # Get the transform from source to target
-                transform = self.tf_buffer.lookup_transform(source_frame, target_frame, rospy.Time(0), rospy.Duration(1.0))
+            ## this is to verify the transformation matrix given by the tf_buffer with the one found from scratch so commented out
+            # # Specify the links
+            # source_frame = "base_link"
+            # target_frame = "end_effector_link"
+        
+            # try:
+            #     # getting the transform
+            #     transform = self.tf_buffer.lookup_transform(source_frame, target_frame, rospy.Time(0), rospy.Duration(1.0))
                 
-                # Extract translation and rotation
-                translation = transform.transform.translation
-                rotation = transform.transform.rotation
+            #     # getting translation and rotation
+            #     translation = transform.transform.translation
+            #     rotation = transform.transform.rotation
 
-                # Convert rotation (quaternion) to a rotation matrix
-                from scipy.spatial.transform import Rotation as R
-                rot_matrix = R.from_quat([rotation.x, rotation.y, rotation.z, rotation.w]).as_matrix()
+            #     # conveerting quat to rot matrix
+            #     from scipy.spatial.transform import Rotation as R
+            #     rot_matrix = R.from_quat([rotation.x, rotation.y, rotation.z, rotation.w]).as_matrix()
 
-                # Construct the full transformation matrix
-                transform_matrix = np.eye(4)
-                transform_matrix[:3, :3] = rot_matrix
-                transform_matrix[:3, 3] = [translation.x, translation.y, translation.z]
+            #     
+            #     transform_matrix = np.eye(4)
+            #     transform_matrix[:3, :3] = rot_matrix
+            #     transform_matrix[:3, 3] = [translation.x, translation.y, translation.z]
 
-                # print('\ntf2 transformation')
-                # print(f"Transformation Matrix from {source_frame} to {target_frame}:\n{transform_matrix}")
+            #     # print('\ntf2 transformation')
+            #     # print(f"Transformation Matrix from {source_frame} to {target_frame}:\n{transform_matrix}")
 
-            except tf2_ros.LookupException:
+            # except tf2_ros.LookupException:
 
-                print("Transform not found")
+            #     print("Transform not found")
 
 
 if __name__ == "__main__":
